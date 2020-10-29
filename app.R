@@ -10,6 +10,16 @@ head(occ_qc)
 
 CR01_sf <- sf::read_sf("./local_data", layer = "CR01_sf")
 
+CR01_sf <- sf::read_sf("./local_data", layer = "CR01_sf")
+# ----------  Création d'une fonction pour obtenir une couleur par province
+pal <- colorFactor("Dark2", domain = CR01_sf$NOM_PROV_N)
+
+# ----------  Création des pop-ups par province
+labels <- sprintf( #Use C-style String Formatting Commands
+  "<strong>%s</strong>",
+  CR01_sf$NOM_PROV_N
+) %>% lapply(htmltools::HTML)
+
 ui <- dashboardPage(
   dashboardHeader(disable = TRUE),
   dashboardSidebar(disable = TRUE),
