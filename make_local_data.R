@@ -42,7 +42,6 @@ summary(pts_in_poly@data)
 pts_in_poly@data <- cbind(pts_in_poly@data, coord_occ) # récupération des lat/long
 
 occ_qc <- pts_in_poly@data[!is.na(pts_in_poly@data$NOM_PROV_N),] # Retrait des occurences en dehors du Québec
-
 #occ_qc <- sf::st_as_sf(occ_qc) # Conversion d'un objet classe sp vers un objet classe sf
 
 # ---------- Réduction de la résolution des polygones pour augmenter la vitesse
