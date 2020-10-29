@@ -1,4 +1,6 @@
 # make_local_data file
+rm(list=ls())
+
 library(leaflet)
 library(sp)
 library(sf)
@@ -30,16 +32,18 @@ labels <- sprintf( #Use C-style String Formatting Commands
 
 # ---------- Association des provinces naturelles avec les occurences
 # Intersection occurences et polygones
+coord_occ <- occ[,c(7,8)] 
 sp::coordinates(occ) <- ~lon+lat # création d'un objet de classe SpatialPointDataFrame
 proj4string(occ) <- "+proj=longlat +datum=WGS84 +no_defs" # Définir le CRS des occurences
 pts_in_poly <- spatialEco::point.in.poly(occ, CR01) # Association d'une province naturelle (ou NA si en dehors) et de tous ses attributs pour chaque occurence
 head(pts_in_poly@data)
 pts_in_poly@data$NOM_PROV_N <- as.factor(pts_in_poly@data$NOM_PROV_N)
 summary(pts_in_poly@data)
+pts_in_poly@data <- cbind(pts_in_poly@data, coord_occ) # récupération des lat/long
 
-occ_qc <- occ[!is.na(pts_in_poly@data$NOM_PROV_N),] # Retrait des occurences en dehors du Québec
+occ_qc <- pts_in_poly@data[!is.na(pts_in_poly@data$NOM_PROV_N),] # Retrait des occurences en dehors du Québec
 
-occ_qc <- sf::st_as_sf(occ_qc) # Conversion d'un objet classe sp vers un objet classe sf
+#occ_qc <- sf::st_as_sf(occ_qc) # Conversion d'un objet classe sp vers un objet classe sf
 
 # ---------- Réduction de la résolution des polygones pour augmenter la vitesse
 CR01_sf <- sf::st_as_sf(CR01)
@@ -47,5 +51,5 @@ CR01_sf <- rmapshaper::ms_simplify(CR01_sf, keep=.01)
 
 #### Stockage des données traitées dans le fichier "local_data" ####
 
-sf::write_sf(occ_qc, "./local_data/occ_qc.csv")
+write.csv(occ_qc, "./local_data/occ_qc.csv")
 sf::write_sf(CR01_sf, "./local_data/CR01_sf.shp")
