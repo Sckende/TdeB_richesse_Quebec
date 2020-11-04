@@ -10,7 +10,8 @@ library(spatialEco)
 
 #### Chargement des données ####
 # ---------- Chargement des polygones
-CR01 <- rgdal::readOGR("./source_data", layer = "CR_NIV_01_S", stringsAsFactors = FALSE, encoding = "UTF-8")
+#CR01 <- rgdal::readOGR("./source_data", layer = "CR_NIV_01_S", stringsAsFactors = FALSE, encoding = "UTF-8")
+CR01 <- rgdal::readOGR("./source_data", layer = "CR_NIV_01_S")
 CR01 <- sp::spTransform(CR01, CRS("+proj=longlat +datum=WGS84 +no_defs"))
 
 str(CR01, max.level = 3)

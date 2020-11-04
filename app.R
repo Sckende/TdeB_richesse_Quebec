@@ -27,30 +27,34 @@ ui <- dashboardPage(
   dashboardSidebar(disable = TRUE),
   dashboardBody(
     fluidRow(
-      # box(width = 4,
-      #     height = 900,
-      #     selectInput("sta",
-      #                 "Statut de l'espèce",
-      #                 c("Tous", "Éteint à l'état sauvage - EW", "En danger critique - CR", "En danger - EN", "Vulnérable - VU", "Quasi menacé - NT", "Préoccupation mineure - LC", "Données insuffisantes - DD", "Non évalué - NE")),
-      #     uiOutput("statut")),
-      box(width = 4,
+      box(width = 3,
+          height = 900,
+          radioButtons("Statut", 
+                       label = h3("Sélectionner le statut de précarité"), 
+                       choices = list("Toutes les espèces" = 1, 
+                                      "Abondantes"  = 2, 
+                                      "Susceptibles" = 3,
+                                      "Menacées" = 4,
+                                      "Vulnérables" = 5
+                       ), 
+                       selected = 1),
+          uiOutput("statut"),
+          radioButtons("grou",
+                      label = h3("Sélectionner le groupe taxonomique"),
+                      c("Tous", unique(occ_qc$species_gr)),
+                      selected = "Tous")),
+      box(width = 6,
+          height = 900,
+          leafletOutput("map", height = 880)),
+      box(width = 3,
           height = 900,
               h3("Analyses de raréfaction pour le Québec"),
               h4("Richesse spécifique par groupe taxonomique"),
               tableOutput("richesse_qc"),
-              h4("Occurences des espèces par groupe taxonomique"),
-              selectInput("grou",
-                          "",
-                          c("Tous", unique(occ_qc$species_gr)),
-                          selected = "Tous"),
-              h4("Richesse spécifique par région"),
+              h3("Richesse spécifique par région"),
               h5("(Sélectionner une région sur la carte)"),
               tableOutput("richesse_locale")
-          ),
-      box(width = 8,
-          height = 900,
-          leafletOutput("map", height = 880))
-    ),
+          )),
     fluidRow(
       box(width = 12,
           height = "auto",
@@ -63,11 +67,6 @@ ui <- dashboardPage(
 server <- function(input, output) {
 
   # ---------- Listes déroulantes
-  
-  # Sélection des espèces par statut
-  # occ_stat = reactive({
-  #   occ_qc[occ_qc$xxxx == input$sta,]
-  # })
   
   #Sélection des espèces par groupe
   occ_grou = reactive({
@@ -116,10 +115,21 @@ server <- function(input, output) {
   observe({
   event <- input$map_shape_click
   print(event)
-  if(!is.null(event$id)){
-  output$richesse_locale <- renderTable(rare_shiny(occ_qc[occ_qc$NOM_PROV_N == event$id,]))
-  output$donnees <- renderDataTable(occ_qc[occ_qc$NOM_PROV_N == event$id, c(2:7, 10)])
+  if(is.null(event$id)){
+    mess <- unique(occ_qc[, c("scientific_name", "species_gr")])
+    message <- mess[order(mess$scientific_name),]
+    names(message) <- c("espèce", "groupe taxonomique")
+    output$donnees <- renderDataTable(message)
+  }else{
+    mess <- occ_qc[occ_qc$NOM_PROV_N == event$id,]
+    message <- unique(mess[c("scientific_name", "species_gr")])
+    message <- message[order(message$scientific_name),]
+    names(message) <- c("espèce", "groupe taxonomique")
+    
+    output$richesse_locale <- renderTable(rare_shiny(mess))
+    output$donnees <- renderDataTable(message)
   }
+  
   # ----------Obtention des données à télécharger
 
   output$DL_data <- downloadHandler(

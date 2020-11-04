@@ -1,18 +1,22 @@
 # Fonction pour formatage des données et application de la fonction iNEXT
 rare_shiny <- function(x){
-  groups <- unique(x$species_gr)
+  
+  # Sélection des groupes taxonomiques avec 4 observations et plus, afin d'éviter les erreurs liées au manque d'effectif
+  tt <- table(x$species_gr)
+  x1 <- subset(x, x$species_gr %in% names(tt[tt > 4]))
+  
+  groups <- unique(x1$species_gr)
   
   freq <- list()
   
   for(i in 1:length(groups))
   {
     
-    sub <- subset(x,
-                  x$species_gr == groups[i])
-    
+    sub <- subset(x1,
+                  x1$species_gr == groups[i])
+
     freq[[i]] <- sort(table(sub$scientific_name),
                       decreasing = TRUE)
-    
   }
   
   names(freq) <- groups
